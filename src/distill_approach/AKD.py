@@ -84,6 +84,6 @@ class AKD():
             if epoch < 1:
                 return 1
             else:
-                return 1 - self.valid_taw_accuracies[epoch-1] / self.valid_tag_accuracies[epoch-1]
+                return 1 - self.valid_taw_accuracies[epoch-1] / ( self.valid_tag_accuracies[epoch-1] + self.valid_taw_accuracies[epoch-1] )
 
     

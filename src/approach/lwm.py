@@ -170,7 +170,7 @@ class Appr(Inc_Learning_Appr):
         """Contains the evaluation code"""
         if t == 0:
             return super().eval(t, val_loader)
-        total_loss, total_acc_taw, total_acc_tag, total_num = 0, 0, 0, 0
+        total_loss, train_loss, kd_loss, total_acc_taw, total_acc_tag, total_num = 0, 0, 0, 0, 0, 0
         self.model.eval()
         with GradCAM(self.model, self.gradcam_layer) as gradcam, \
                 GradCAM(self.model_old, self.gradcam_layer) as gradcam_old:
@@ -180,14 +180,17 @@ class Appr(Inc_Learning_Appr):
                 attmap_old, outputs_old = gradcam_old(images, return_outputs=True)
                 # Forward current model
                 attmap, outputs = gradcam(images, return_outputs=True)
-                loss,_,_,_ = self.criterion(t, outputs, targets.to(self.device), outputs_old, attmap, attmap_old)
+                total_l,train_l,kd_l,_ = self.criterion(t, outputs, targets.to(self.device), outputs_old, attmap, attmap_old)
                 hits_taw, hits_tag = self.calculate_metrics(outputs, targets)
                 # Log
-                total_loss += loss.item() * len(targets)
+                total_loss += total_l.item() * len(targets)
+                train_loss += train_l.item()*len(targets)
+                if t>0:
+                    kd_loss += kd_l.item() * len(targets)                
                 total_acc_taw += hits_taw.sum().item()
                 total_acc_tag += hits_tag.sum().item()
                 total_num += len(targets)
-        return total_loss / total_num, total_acc_taw / total_num, total_acc_tag / total_num
+        return total_loss / total_num, train_loss/total_num, kd_loss/total_num , total_acc_taw / total_num, total_acc_tag / total_num
 
     def attention_distillation_loss(self, attention_map1, attention_map2):
         """Calculates the attention distillation loss"""
@@ -235,9 +238,8 @@ class Appr(Inc_Learning_Appr):
 
         if t > 0 and erf_kd_use:    
             weight = self.erf._get_distill_weight(epoch, train_loss.item(), kd_loss.item(),self.distill_percent,self.nepochs, self.cycle_approach)
-            kd_loss *= weight
 
-        total_loss = train_loss + kd_loss
+        total_loss = train_loss + kd_loss * weight
         return total_loss, train_loss, kd_loss, weight
 
 

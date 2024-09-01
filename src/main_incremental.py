@@ -213,8 +213,8 @@ def main(argv=None):
     # wandb
     now = datetime.datetime.now()
     date_time = now.strftime("%Y-%m-%d_%H-%M-%S")
-    wandb.init(project = 'debug')
-    #wandb.init(project="FACIL_{}_final".format(args.approach), name=full_exp_name+'_'+date_time, config=args)
+    # wandb.init(project = 'debug')
+    wandb.init(project="FACIL_{}_final".format(args.approach), name=full_exp_name+'_'+date_time, config=args)
 
     # Loaders
     utils.seed_everything(seed=args.seed)

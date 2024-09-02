@@ -184,9 +184,9 @@ class Appr(Inc_Learning_Appr):
                 hits_taw, hits_tag = self.calculate_metrics(outputs, targets)
                 # Log
                 total_loss += total_l.item() * len(targets)
-                train_loss += train_l.item()*len(targets)
+                train_loss += train_l.item() * len(targets)
                 if t>0:
-                    kd_loss += kd_l.item() * len(targets)                
+                    kd_loss += kd_l * len(targets)                
                 total_acc_taw += hits_taw.sum().item()
                 total_acc_tag += hits_tag.sum().item()
                 total_num += len(targets)

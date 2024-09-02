@@ -258,7 +258,7 @@ class Inc_Learning_Appr:
                 total_acc_tag += hits_tag.sum().item()
                 total_num += len(targets)
 
-        return total_loss / total_num, total_acc_taw / total_num, total_acc_tag / total_num
+        return total_loss / total_num, total_loss / total_num, 0, total_acc_taw / total_num, total_acc_tag / total_num
 
     def calculate_metrics(self, outputs, targets):
         """Contains the main Task-Aware and Task-Agnostic metrics"""

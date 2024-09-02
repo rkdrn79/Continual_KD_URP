@@ -192,18 +192,24 @@ class Appr(Inc_Learning_Appr):
                     outputs_old = self.model_old(images.to(self.device))
                 # Forward current model
                 outputs, feats = self.model(images.to(self.device), return_features=True)
-                loss,_,_,_ = self.criterion(t, outputs, targets.to(self.device), outputs_old)
+                total_l,train_l,kd_l,_ = self.criterion(t, outputs, targets.to(self.device), outputs_old)
                 # during training, the usual accuracy is computed on the outputs
                 if not self.exemplar_means:
                     hits_taw, hits_tag = self.calculate_metrics(outputs, targets)
                 else:
                     hits_taw, hits_tag = self.classify(t, feats, targets)
                 # Log
-                total_loss += loss.item() * len(targets)
+                total_loss += total_l.item() * len(targets)
+                train_loss += train_l.item() * len(targets)
+                
+                if t>0:
+                    kd_loss += kd_l.item()*len(targets)
+                    # kd_loss += kd_l * len(targets)
+                
                 total_acc_taw += hits_taw.sum().item()
                 total_acc_tag += hits_tag.sum().item()
                 total_num += len(targets)
-        return total_loss / total_num, total_acc_taw / total_num, total_acc_tag / total_num
+        return total_loss / total_num, train_loss/total_num, kd_loss/total_num , total_acc_taw / total_num, total_acc_tag / total_num
 
     # Algorithm 3: classification and distillation terms -- original formulation has no trade-off parameter (lamb=1)
     def criterion(self, t, outputs, targets, outputs_old=None, epoch = None, erf_kd_use=False, rgr_kd_use=False):
